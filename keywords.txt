@@ -22,3 +22,7 @@ cmd KEYWORD2
 #######################################
 
 rapidPlugin_template_h  LITERAL1
+SCREEN_WIDTH  LITERAL1
+SCREEN_HEIGHT LITERAL1
+DISPLAY_BLACK LITERAL1
+DISPLAY_WHITE LITERAL1

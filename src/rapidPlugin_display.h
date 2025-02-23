@@ -12,6 +12,10 @@
 #ifndef rapidPlugin_display_h
 #define rapidPlugin_display_h
 
+#ifndef rapidPlugin_display_stack_size
+#define rapidPlugin_display_stack_size 512
+#endif
+
 #include "rapidRTOS.h"
 
 #include <Adafruit_GFX.h>
@@ -55,7 +59,7 @@ rapidPlugin_display::rapidPlugin_display(const char* identity)
 BaseType_t rapidPlugin_display::run(time_t splash)
 {
   _splash = splash;
-  return rapidPlugin::run(&main_loop, 512);
+  return rapidPlugin::run(&main_loop, rapidPlugin_display_stack_size);
 }
 
 /**
@@ -68,9 +72,10 @@ BaseType_t rapidPlugin_display::run(time_t splash)
 BaseType_t rapidPlugin_display::runCore(BaseType_t core, time_t splash)
 {
   _splash = splash;
-  return rapidPlugin::runCore(core, &main_loop, 512);
+  return rapidPlugin::runCore(core, &main_loop, rapidPlugin_display_stack_size);
 }
 
+#ifndef rapidPlugin_display_override_main_loop
 /**
  * @brief Main processing loop responsible for rendering the canvas object
  * onto the target display object. The task delay directly affects the screen
@@ -111,5 +116,6 @@ void rapidPlugin_display::main_loop(void* pModule)
     vTaskDelay(500 / portTICK_PERIOD_MS);
   }
 }
+#endif // rapidPlugin_display_override_main_loop
 
-#endif
+#endif // rapidPlugin_display_h

@@ -9,6 +9,9 @@
  * 
  */
 
+#ifndef rapidPlugin_displayCanvas_h
+#define rapidPlugin_displayCanvas_h
+
 #ifndef SCREEN_WIDTH
 #define SCREEN_WIDTH 128
 #endif
@@ -431,3 +434,5 @@ void displayCanvas::textBox(const char* text, int16_t x_pos, int16_t y_pos, int1
   canvas.fillRect(x1, y1, thickness, y2 - y1, DISPLAY_WHITE);
   canvas.fillRect(x2, y1, thickness, y2 - y1, DISPLAY_WHITE);
 }
+
+#endif // rapidPlugin_displayCanvas_h

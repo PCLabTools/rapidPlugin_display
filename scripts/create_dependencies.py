@@ -1,45 +1,28 @@
-###########################################################################
-# BUILD                                                                   #
-# This script is ran to initialise the plugin and generate any dependent  #
-# files necessary for operation and any other pre-build actions           #
-###########################################################################
-
-try:
-  Import("env") # type: ignore
-  current_env = env["PIOENV"] # type: ignore
-  project_path = env["PROJECT_DIR"] #type: ignore
-  error = '\033[0;31m'
-  warning = '\033[0;33m'
-  report = '\033[0;32m'
-  info = '\033[0;30m'
-except:
-  error = '[error] '
-  warning = '[warning] '
-  report = ''
-  info = '[info] '
-
-print(report + '\'rapidPlugin_display\' running \'build.py\'...')
-
 FILEPATH_DEPENDENCY_H = project_path + '/include/display.h'
 
-header_contents = '''/**
+contents = '''/**
  * @file display.h
  * @author your name (you@domain.com)
  * @brief 
  * @version 0.1
- * @date 2023-10-24
+ * @date 2025-02-23
  * 
- * @copyright Copyright (c) 2023
+ * @copyright Copyright (c) 2025
  * 
  */
 
+#ifndef display_h
+#define display_h
+
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
+
 #define OLED_RESET -1
 #define SCREEN_ADDRESS 0x3C
-
 #define OLED_WIRE_SDA 16
 #define OLED_WIRE_SCL 17
+
+#include "rapidPlugin_display.h"
 
 #include "rapidPlugin_displayCanvas.h"
 
@@ -134,10 +117,60 @@ uint8_t canvasController()
   return 1;
 }
 
+/**
+ * @brief Draws the splash screen onto the display
+ * 
+ */
 void splashScreen()
 {
   canvas.drawBitmap(0, 0, splashImage, SCREEN_WIDTH, SCREEN_HEIGHT, DISPLAY_WHITE);
-}'''
+}
+
+#ifndef rapidPlugin_display_override_main_loop
+/**
+ * @brief Main processing loop responsible for rendering the canvas object
+ * onto the target display object. The task delay directly affects the screen
+ * refresh rate
+ * 
+ * @param pModule 
+ */
+void rapidPlugin_display::main_loop(void* pModule)
+{
+  rapidPlugin_display* plugin = (rapidPlugin_display*)pModule;
+
+  Wire.setSCL(OLED_WIRE_SCL);
+  Wire.setSDA(OLED_WIRE_SDA);
+  if (!displayObject.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS))
+  {
+    for (;;)
+    {
+      rapidRTOS.printDebug(0, rapidDebug::ERROR, "Cannot initialise SSD1306\n", NULL);
+      delay(1000);
+    }
+  }
+  displayObject.clearDisplay();
+  if (plugin->_splash)
+  {
+    splashScreen();
+    displayObject.drawBitmap(0, 0,  canvas.getBuffer(), SCREEN_WIDTH, SCREEN_HEIGHT, DISPLAY_WHITE, DISPLAY_BLACK);
+    displayObject.display();
+    delay(plugin->_splash);
+  }
+  displayObject.clearDisplay();
+  for ( ;; )
+  {
+    if (canvasController()) 
+    {
+      displayObject.drawBitmap(0, 0, canvas.getBuffer(), SCREEN_WIDTH, SCREEN_HEIGHT, DISPLAY_WHITE, DISPLAY_BLACK);
+      displayObject.display(); 
+    }
+    vTaskDelay(500 / portTICK_PERIOD_MS);
+  }
+}
+#endif // rapidPlugin_display_override_main_loop
+
+#endif // display_h
+'''
 
 try:
   open(FILEPATH_DEPENDENCY_H, "r+")
@@ -146,7 +179,6 @@ except:
   print(warning + '\'display.h\' not present, generating default...')
   try:
     with open(FILEPATH_DEPENDENCY_H, 'x') as f:
-      f.write(header_contents)
-      print(report + 'dependencies generated')
+      f.write(contents)
   except:
     print(error + '\'display.h\' could not be written to')

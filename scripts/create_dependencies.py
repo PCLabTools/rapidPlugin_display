@@ -11,6 +11,10 @@ contents = '''/**
  * 
  */
 
+// #define rapidPlugin_display_override_main_loop
+
+#include "rapidPlugin_display.h"
+
 #ifndef display_h
 #define display_h
 
@@ -21,8 +25,6 @@ contents = '''/**
 #define SCREEN_ADDRESS 0x3C
 #define OLED_WIRE_SDA 16
 #define OLED_WIRE_SCL 17
-
-#include "rapidPlugin_display.h"
 
 #include "rapidPlugin_displayCanvas.h"
 
@@ -126,7 +128,7 @@ void splashScreen()
   canvas.drawBitmap(0, 0, splashImage, SCREEN_WIDTH, SCREEN_HEIGHT, DISPLAY_WHITE);
 }
 
-#ifndef rapidPlugin_display_override_main_loop
+#ifdef rapidPlugin_display_override_main_loop
 /**
  * @brief Main processing loop responsible for rendering the canvas object
  * onto the target display object. The task delay directly affects the screen
@@ -144,7 +146,7 @@ void rapidPlugin_display::main_loop(void* pModule)
   {
     for (;;)
     {
-      rapidRTOS.printDebug(0, rapidDebug::ERROR, "Cannot initialise SSD1306\n", NULL);
+      rapidRTOS.printDebug(0, rapidDebug::ERROR, "Cannot initialise SSD1306\\n", NULL);
       delay(1000);
     }
   }

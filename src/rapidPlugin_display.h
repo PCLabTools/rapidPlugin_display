@@ -87,8 +87,12 @@ void rapidPlugin_display::main_loop(void* pModule)
 {
   rapidPlugin_display* plugin = (rapidPlugin_display*)pModule;
 
+  #if defined(BOARD_ESP32)
+  Wire.setPins(OLED_WIRE_SDA, OLED_WIRE_SCL);
+  #else
   Wire.setSCL(OLED_WIRE_SCL);
   Wire.setSDA(OLED_WIRE_SDA);
+  #endif
   if (!displayObject.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS))
   {
     for (;;)
